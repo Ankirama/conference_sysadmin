@@ -2,13 +2,11 @@
 
 ## Introduction
 
-### Objectifs de ce keynote
+### Objectifs de cette conference
 
 ### Environement utilisé
 
-
-
-## Sécurisé son serveur
+## Comment sécuriser son serveur
 
 ## Aperçu de Docker
 

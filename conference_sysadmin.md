@@ -8,6 +8,8 @@
 
 ## Comment sécuriser son serveur
 
+## Configuration de GitLab
+
 ## Aperçu de Docker
 
 ## Aperçu d'une seedbox

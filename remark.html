@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Title</title>
+    <title>Conference sys admin</title>
     <meta charset="utf-8">
     <style>
       @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
@@ -123,32 +123,166 @@ layout: true
 class: center, middle, inverse
 ---
 
-# Keynote Sys admin
+# Conférence Sys admin
 [Ankirama]
-```remark
-# Title 1
-```
+
 .footnote[Dispo sur mon [github](https://github.com/Ankirama)]
 
 ---
+## Securiser son serveur
+## Installation de gitlab
+## Un peu plus
+## TP
+---
+layout: false
+.left-column[
+  ## Securiser son serveur
+]
+.right-column[
+
+  - Applications / outils a configurer / securiser
+
+
+  - Applications / protocoles a eviter
+
+
+  - HTTPS
+
+
+  - Acces physique
+
+
+  - Backup
+]
+---
+layout: false
+.left-column[
+  ## Securiser son serveur
+  ## Installation de gitlab
+]
+.right-column[
+  - Installation de gitlab
+
+
+  - Configuration d'Apache pour HTTPS
+
+
+  - Configuration de github
+
+  .footnote[Le fichier config `/etc/gitlab/gitlab.rb` est vraiment complet ainsi que la doc, je vous conseille d'aller jeter un oeil]
+]
+---
+layout: false
+.left-column[
+  ## Securiser son serveur
+  ## Installation de gitlab
+  ## Un peu plus
+]
+.right-column[
+  - Introduction a Docker
+
+
+  - Introduction a transmission / flexget
+
+
+  - Web server index h5ai
+
+
+  - Serveur TS avec WebGUI admin
+
+
+  .footnote[Et d'autres choses]
+]
+---
 template: inverse
-name: sum
+## Securiser son serveur
+---
+.left-column[
+  ## SSH
+  ### Configuration basique
+]
+.right-column[
+  - Installation OpenSSH
 
-# Agenda
 
-1. Introduction
-2. Deep-dive
-3. ...
+  - Utilisation Protocole 2
+
+
+  - Restreindre les utilisateurs
+
+
+  - Changement de port
+
+
+  - Cles SSH
+
+
+  - Verifier password vides
+
+
+```shell
+$ sudo apt-get install openssh-server
+$ vi /etc/ssh/sshd_config
+Protocol 2
+AllowUsers ankirama
+AllowGroups admin
+PermitRootLogin no
+Port 4224
+PermitEmptyPasswords no
+```
+
+]
+---
+.left-column[
+  ## SSH
+  ### Configuration basique
+  ### SFTP a la place de FTP
+]
+.right-column[
+  - Pourquoi SFTP et pas FTP ?
+
+
+  - Bloquer l'utilisateur dans son home
+
+```shell
+  vi /etc/ssh/sshd_config
+  Subsystem sftp internal-sftp
+  Match group sftponly
+  ChrootDirectory /home/%u
+  X11Forwarding no
+  AllowTcpForwarding no
+  ForceCommand internal-sftp
+  ```
+
+  - Avantages / inconvenients de cette methode
+]
+---
+## Fermer son serveur
+---
+.left-column[
+  ## Fermer son serveur
+  ### iptables
+  ### fail2ban
+]
+.right-column[
+
+]
 
 ---
-
-# Introduction
-
+---
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
     </script>
     <script>
-      var slideshow = remark.create();
+      var hljs = remark.highlighter.engine;
+    </script>
+    <script src="remark.language.js"></script>
+    <script>
+      var slideshow = remark.create({
+          highlightStyle: 'monokai',
+          highlightLanguage: 'remark',
+          highlightLines: true
+        }) ;
     </script>
   </body>
 </html>

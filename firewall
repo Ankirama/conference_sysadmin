@@ -1,0 +1,170 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          Firewall maison
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:
+# Default-Stop:
+# X-Interactive:     false
+# Short-Description: Firewall maison
+### END INIT INFO
+
+# Empty current tables
+iptables -t filter -F
+
+# Empty personnal rules
+iptables -t filter -X
+
+# Forbid all connections (INPUT / OUTPUT / FORWARD)
+iptables -t filter -P INPUT DROP
+iptables -t filter -P FORWARD DROP
+iptables -t filter -P OUTPUT DROP
+
+# ---
+
+# Ne pas casser les connexions etablies
+iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Autoriser loopback
+iptables -t filter -A INPUT -i lo -j ACCEPT
+iptables -t filter -A OUTPUT -o lo -j ACCEPT
+
+# ICMP (Ping)
+iptables -t filter -A INPUT -p icmp -j ACCEPT
+iptables -t filter -A OUTPUT -p icmp -j ACCEPT
+
+# ---
+
+# ---
+# SSH In
+iptables -t filter -A INPUT -p tcp --dport 22 -j ACCEPT
+
+# SSH Out
+iptables -t filter -A OUTPUT -p tcp --dport 22 -j ACCEPT
+
+echo "SSH ok"
+
+# NTP Out
+iptables -t filter -A OUTPUT -p udp --dport 123 -j ACCEPT
+
+# HTTP + HTTPS Out
+iptables -t filter -A OUTPUT -p tcp --dport 80 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 443 -j ACCEPT
+
+# HTTP + HTTPS In
+iptables -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
+
+echo "HTTP ok"
+
+# DNS In/Out
+iptables -t filter -A OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables -t filter -A OUTPUT -p udp --dport 53 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --dport 53 -j ACCEPT
+iptables -t filter -A INPUT -p udp --dport 53 -j ACCEPT
+
+echo "DNS ok"
+
+# Gitlab
+iptables -A INPUT -p tcp -s localhost --dport 8181 -j ACCEPT
+
+iptables -t filter -A INPUT -p tcp --dport 8080 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 8080 -j ACCEPT
+
+
+# Teamspeak IN
+iptables -t filter -A INPUT -p udp --dport 9987 -j ACCEPT
+iptables -t filter -A INPUT -p udp --sport 9987 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --dport 30033 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --sport 30033 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --dport 10011 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --sport 10011 -j ACCEPT
+
+# Mail SMTP:25
+#iptables -t filter -A INPUT -p tcp --dport 25 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 25 -j ACCEPT
+
+# Mail SMTPD:587
+#iptables -t filter -A INPUT -p tcp --dport 587 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 587 -j ACCEPT
+
+# Mail POP3:110
+#iptables -t filter -A INPUT -p tcp --dport 110 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 110 -j ACCEPT
+
+# Mail IMAP:143
+#iptables -t filter -A INPUT -p tcp --dport 143 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 143 -j ACCEPT
+
+# Mail IMAPS:993
+#iptables -t filter -A INPUT -p tcp --dport 993 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 993 -j ACCEPT
+
+
+# Mail POP3S:995
+#iptables -t filter -A INPUT -p tcp --dport 995 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 995 -j ACCEPT
+
+#echo "Mail ok"
+
+# Monit
+#iptables -t filter -A INPUT -p tcp --dport 2812 -j ACCEPT
+
+# Webmin
+#iptables -t filter -A INPUT -p tcp --dport 10000 -j ACCEPT
+
+#echo "Monitoring ok"
+
+# NODEJS
+#iptables -t filter -A INPUT -p tcp --dport 9000 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 9000 -j ACCEPT
+#iptables -t filter -A INPUT -p tcp --dport 3000 -j ACCEPT
+#iptables -t filter -A INPUT -p tcp --dport 3001 -j ACCEPT
+#iptables -t filter -A INPUT -p tcp --dport 9001 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 9001 -j ACCEPT
+
+#iptables -t filter -A OUTPUT -p tcp --dport 3000 -j ACCEPT
+
+#############################################################
+#################### Begin TORRENTS #########################
+#############################################################
+
+# Transmission
+# Transmission In
+#iptables -A INPUT -p tcp --dport 9091 -j ACCEPT
+#iptables -A INPUT -p tcp --dport 51413 -j ACCEPT
+
+# Transmission Out
+#iptables -A OUTPUT -p tcp --dport 9091 -j ACCEPT
+#iptables -A OUTPUT -p tcp --dport 51413 -j ACCEPT
+
+# Defaults Trackers
+#iptables -t filter -A INPUT -p udp --dport 80 -j ACCEPT
+#iptables -t filter -A OUTPUT -p udp --dport 80 -j ACCEPT
+#iptables -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 80 -j ACCEPT
+#iptables -t filter -A INPUT -p tcp --dport 6544 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 6544 -j ACCEPT
+#iptables -t filter -A INPUT -p tcp --dport 6969 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 6969 -j ACCEPT
+
+# Tracker bakabt
+#iptables -t filter -A INPUT -p tcp --dport 2710 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 2710 -j ACCEPT
+
+# Tracker T411
+#iptables -t filter -A INPUT -p tcp --dport 8880 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 8880 -j ACCEPT
+#iptables -t filter -A INPUT -p tcp --dport 56969 -j ACCEPT
+#iptables -t filter -A OUTPUT -p tcp --dport 56969 -j ACCEPT
+
+# Tracker Piratebay
+#iptables -A INPUT -p udp --dport 3310 -j ACCEPT
+#iptables -A OUTPUT -p udp --dport 3310 -j ACCEPT
+#iptables -A INPUT -p udp --dport 1
+
+# Tracker Coalgirls
+#iptables -A INPUT -p tcp --dport 3277 -j ACCEPT
+#iptables -A OUTPUT -p tcp --dport 3277 -j ACCEPT

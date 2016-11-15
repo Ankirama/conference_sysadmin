@@ -3,9 +3,23 @@
 ## iptables
 
 - https://doc.ubuntu-fr.org/iptables
+
 - https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04
+
 - firewall: [https://gist.github.com/Ankirama/20042e17a8754352d22562832aa2d49b](https://gist.github.com/Ankirama/20042e17a8754352d22562832aa2d49b)
-- ​
+
+- Pour rendre automatique les regles du firewall (apres l'avoir telecharge):
+
+  **ATTENTION**: Verfiez le port SSH!!!
+
+  ```shell
+  $ chmod +x firewall
+  $ sudo mv firewall /etc/init.d/
+  $ sudo update-rc.d firewall defaults
+  $ reboot # ou sudo /etc/init.d/firewall
+  ```
+
+  ​
 
 ## fail2ban
 

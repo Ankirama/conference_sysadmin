@@ -222,7 +222,7 @@ template: inverse
 
 ```shell
 $ sudo apt-get install openssh-server
-$ vi /etc/ssh/sshd_config
+$ sudo emacs /etc/ssh/sshd_config
 Protocol 2
 AllowUsers ankirama
 AllowGroups admin
@@ -245,7 +245,7 @@ PermitEmptyPasswords no
   - Bloquer l'utilisateur dans son home
 
 ```shell
-  vi /etc/ssh/sshd_config
+  $ sudo emacs /etc/ssh/sshd_config
   Subsystem sftp internal-sftp
   Match group sftponly
   ChrootDirectory /home/%u
@@ -257,18 +257,370 @@ PermitEmptyPasswords no
   - Avantages / inconvenients de cette methode
 ]
 ---
-## Fermer son serveur
+template: inverse
+## iptables / fail2ban
 ---
 .left-column[
-  ## Fermer son serveur
+  ## iptables / fail2ban
+  ### iptables
+]
+.right-column[
+  - Ne pas se prendre la tete avec [UFW](https://help.ubuntu.com/lts/serverguide/firewall.html)
+
+
+  - Pourquoi utiliser iptables
+
+
+  - Configurer ses regles
+
+    - Manuellement
+
+    - Avec [iptables-persistent](https://doc.ubuntu-fr.org/iptables)
+
+
+  - Appliquer les règles au démarrage
+
+  ```shell
+  $ sudo cp ~/firewall /etc/init.d/
+  $ sudo update-rc.d firewall defaults
+  $ sudo /etc/init.d/firewall
+  # Attention la derniere commande va vous deconnecter
+  # Il faut etre sur du port SSH renseigne!!
+  ```
+
+  - Exemple de script: [firewall.sh](https://gist.github.com/Ankirama/20042e17a8754352d22562832aa2d49b) a placer dans `/etc/init.d/`
+]
+
+---
+.left-column[
+  ## iptables / fail2ban
   ### iptables
   ### fail2ban
 ]
 .right-column[
+  - fail2ban ?
+
+
+  - Installation / configuration de base
+```shell
+$ sudo emacs /etc/fail2ban/jail.conf
+[sshd]
+enabled = true
+...
+bantime = -1 # permanent
+maxretry = 3 # default value
+```
+  - Ban permanent meme apres reboot
+```shell
+$ sudo vi /etc/fail2ban/action.d/iptables-multiport.conf
+```
+]
+---
+template: inverse
+## Utilisation d'un bon mot de passe
+---
+.left-column[
+## Utilisation d'un bon mot de passe
+### Qu'est ce qu'un bon mot de passe
+]
+.right-column[
+  - Taille minimum
+
+
+  - Caracteres sans signification (pas de prenom, info perso)
+
+
+  - Inclure tous les caracteres
+
+
+  - Resultat
+
+    - Mot de passe : **me7r23ySd@**
+
+    - Temps estime par [howsecureismypassword](https://howsecureismypassword.net/) : **6 ans**
+]
+---
+.left-column[
+## Utilisation d'un bon mot de passe
+### Qu'est ce qu'un bon mot de passe
+### Qu'est ce qu'une bonne passphrase
+]
+.right-column[
+  - Mots d'une taille minimum
+
+
+  - Plusieurs mots
+
+
+  - Le moins de sens possible
+
+  - Resultat
+
+    - Passphrase : **La pomme voiture au lait de verre**
+
+    - Temps estime par [howsecureismypassword](https://howsecureismypassword.net/) : **10 ^ 79 ans**
+]
+---
+.left-column[
+## Utilisation d'un bon mot de passe
+### Qu'est ce qu'un bon mot de passe
+### Qu'est ce qu'une bonne passphrase
+### Password vs Passphrase
+]
+.right-column[
+  - Longueur
+
+
+  - Facilite a retenir
+
+
+  - Difficile a cracker
+
+
+  - Galere de changer ses passords
+
+
+  - Resultat: Passphrase > password
+]
+---
+template: inverse
+## Utilisateurs / passwords differents
+---
+template: inverse
+## HTTPS
+---
+.left-column[
+## HTTPS
+### Certificat auto-signe
+]
+.right-column[
+  - Gratuit et facile a mettre en place
+
+
+  - Pas reconnu, pas utilisable en prod
+
+
+  - Creer sa cle et son certificat
+
+  ```shell
+  $ sudo openssl req -newkey rsa:2048 -nodes \
+  -keyout /etc/ssl/private/domain.key -x509 \
+  -out /etc/ssl/private/domain.crt -days 365
+  ```
+
+  - Usage avec apache2
+
+  ```shell
+  $ sudo emacs /etc/apache2/sites-available/my_vhost.conf
+  <VirtualHost *:443>
+    ...
+    SSLEngine on
+    SSLCertificateFile      /etc/ssl/private/domain.crt
+    SSLCertificateKeyFile   /etc/ssl/private/domain.key
+   ...
+  </VirtualHost>
+  ```
+]
+---
+.left-column[
+## HTTPS
+### Certificat auto-signe
+### Certificat avec Letsencrypt
+]
+.right-column[
+  - Installation (standalone) :
+
+  ```shell
+  $ sudo apt-get install letsencrypt
+  ```
+
+
+  - Creation certificat :
+  ```shell
+  $ sudo mkdir -p /var/www/html/.well-known/acme-challenge
+  $ sudo letsencrypt --webroot -w /var/www/html\
+   -d mydomain.com -d ...
+  ```
+
+  - Configuration avec apache2 :
+
+```shell
+$ sudo emacs /etc/apache2/sites-available/my_vhost.conf
+<VirtualHost *:443>
+  ...
+  SSLEngine on
+  SSLCertificateFile      /my/path/letsencrypt/cert.pem
+  SSLCertificateKeyFile   /my/path/letsencrypt/privkey.pem
+  SSLCertificateChainFile /my/path/letsencrypt/chain.pem
+ ...
+</VirtualHost>
+```
+```shell
+$ letsencrypt renew --dry-run --agree-tos
+```
+.footnote[Informations sur [certbot](https://certbot.eff.org/)]
+]
+---
+template: inverse
+## Acces physique
+---
+.left-column[
+  ## Acces Phyisque
+  ### Serveur maison
+]
+.right-column[
+  - Chiffrer le disque
+
+
+  - Ne pas laisser de post-it avec password a cote
+
+
+  - Avoir un oeil dessus
+]
+---
+.left-column[
+  ## Acces Phyisque
+  ### Serveur maison
+  ### Serveur dans datacenter
+]
+.right-column[
+  - Prendre datacenter visitable si possible
+
+
+  - Verifier la securite (gardien etc)
+
+
+  - Monitorer les connexions via l'interface de l'hebergeur
+]
+---
+template: inverse
+## GitLab
+---
+.left-column[
+  ## GitLab
+  ### Son propre git
+]
+.right-column[
+  - Pourquoi GitLab
+
+
+  - Petit apercu de gitlab
+]
+---
+.left-column[
+  ## GitLab
+  ### Son propre git
+  ### Installation
+]
+.right-column[
+  - Installation facile avec Omnibus
+  ```shell
+  $ sudo apt-get install curl openssh-server \
+  ca-certificates postfix
+  $ curl -sS https://packages.gitlab.com/\
+  install/repositories/gitlab/\
+  gitlab-ce/script.deb.sh | sudo bash
+  $ sudo apt-get install gitlab-ce # pas necessaire
+  # Il faut maintenant configurer `/etc/gitlab/gitlab.rb`
+  ```
 
 ]
-
 ---
+.left-column[
+  ## GitLab
+  ### Son propre git
+  ### Installation
+  ### Configuration
+]
+.right-column[
+  - Configuration gitlab
+
+  - Configuration apache2
+    Exemple de vhost: [gitlab.conf](https://gitlab.com/gitlab-org/gitlab-recipes/tree/master/web-server/apache/https://gitlab.com/gitlab-org/gitlab-recipes/blob/master/web-server/apache/gitlab-omnibus-ssl-apache24.conf)
+    ```shell
+    $ sudo mv gitlab.conf /etc/apache2/sites-available/
+    $ sudo emacs /etc/apache2/sites-available/gitlab.conf
+    # Il faut modifier les YOUR_SERVER_FQDN
+    $ sudo a2enmod rewrite ssl headers proxy \
+    proxy_http
+    $ sudo a2ensite gitlab.conf
+    $ sudo service apache2 restart
+    ```
+
+
+  - Configuration SSL de gitlab
+
+
+  - Utilisation de github pour se log
+
+```shell
+gitlab_rails['omniauth_enabled'] = true
+gitlab_rails['omniauth_allow_single_sign_on'] = false
+gitlab_rails['omniauth_block_auto_created_users'] = true
+gitlab_rails['omniauth_providers'] = [{
+     "name" => "github",
+     "app_id" => "app_id",
+     "app_secret" => "app_secret",
+     "url" => "https://github.com/",
+     "args" => { "scope" => "user:email" }
+   }
+]
+```
+]
+---
+template: inverse
+
+## Les petits plus
+---
+.left-column[
+  ## Les petits plus
+  ### h5ai
+]
+.right-column[
+  - Puissant
+
+
+  - Clean
+
+
+  - Facile d'utilisation / installation
+
+```shell
+$ sudo cp _h5ai .
+# check http://YOUR-DOMAIN.TLD/_h5ai/public/index.php
+```
+Dans le module dire ajouter :
+```shell
+DirectoryIndex  index.html  index.php  /_h5ai/public/index.php
+```
+]
+---
+.left-column[
+  ## Les petits plus
+  ### h5ai
+  ### Autres...
+]
+.right-column[
+  - TS
+
+
+  - Steam
+
+
+  - seedbox
+
+
+  - docker
+
+
+  - ...
+]
+---
+template: inverse
+## Conclusion
+---
+template: inverse
+## TPs
 ---
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
